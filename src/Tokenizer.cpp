@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cctype>
+#include <cstdlib>
 #include <iostream>
 #include <string.h>
 #include <fstream>
@@ -23,13 +24,8 @@ enum TokenType{
 };
 
 
-//we can re loop the tokens to see if everything is correct type
-//rn int literan is just identifier unless we do some colon shit idk man
-
-
+//also should re check the tokens to see if identifiers should be other keywords
 //cannot get semicolon rn that needs to be fixed
-
-
 
 struct Token{
     TokenType type;
@@ -39,8 +35,6 @@ struct Token{
 //lexer. returns a list of tokens tokens have a type and maybe a value
 //should we make this lexer into a class
 //it reads one line at a time (as string) and lexes it 
-
-
 class Lexer{
 
     public:
@@ -58,7 +52,6 @@ class Lexer{
         string line;
 
         while (getline(file,line)){
-            //cout<<"line lex start\n";
             lexLine(line);
         }
 
@@ -145,7 +138,8 @@ class Lexer{
                 cIndex++;
                 continue;
             }
-            cout<<c<<" is not representerd \n";
+            cout<<"SYNTAX ERROR: "<<c<<" is not represented \n";
+            exit(1);
         }
 
     }
@@ -156,6 +150,5 @@ class Lexer{
             cout<<""<<tokens[i].type<<" has value: "<< tokens[i].val  <<"\n";
         }
     }
-
 
 };

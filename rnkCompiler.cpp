@@ -20,12 +20,6 @@ using namespace std;
 
 
 
-//i assume this program leaks memory
-//
-//swap to smartpointers with make_unique
-//
-//smart pointers since idk what the fuck is happening anymore
-//i think something might get dereffed maybe
 
 
 
@@ -39,16 +33,11 @@ class Parser{
     //takes list of tokens returns ast
     //this is the start of the parser
     unique_ptr<ProgramNode> ParseExpression(vector<Token>& tokens){
-        //this should return 
-        //ProgramNode that has the main function node
-        //then in the main function body there should be everythin else
-        //
-        //
         unique_ptr<ProgramNode> progstart= make_unique<ProgramNode>();
 
 
         unique_ptr<FuncDeclNode> mainfn= ParseFuncExpression( tokens);
-        //main body somewhere somehow
+        //todo find main
 
         vector<ExprNode> emnt;
         mainfn->params= emnt;// no params on main, will implement later
@@ -57,19 +46,6 @@ class Parser{
                                        // we can make a function for this later
 
         mainfn->body=ParseFuncBody(tokens);
-        //this does not get somethign 
-        //something gets lost in pointers
-        //we delete somehting we were refrencing with erace 
-        //or idk how this works
-
-        //cout<<"prograsdr\n";
-
-
-        //main body is a list of expressions
-        //the list starts at { and ends at }
-        //for now we only do this later we can nest expressions
-        //parse body fn? vector of expressions
-        //
 
         progstart->program = std::move(mainfn);
         
@@ -182,17 +158,9 @@ int main(){
     unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
 
 
-    //walk the node
-    //cout<<"parser ran\n";
-
-
-
     //PrintEntireAST(nod.get());
 
     //make assembly from this
-
     generate_assemply(std::move(nod));
-    
-
 
 }
