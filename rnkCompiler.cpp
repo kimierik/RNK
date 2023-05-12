@@ -29,6 +29,11 @@ class Parser{
     public:
 
 
+    //we should do like a standard lib thing that auto defines certain functions
+    //like log
+    //so we can get used to calling actual functions in ass
+
+
     //parse expression
     //takes list of tokens returns ast
     //this is the start of the parser
@@ -47,7 +52,7 @@ class Parser{
 
         mainfn->body=ParseFuncBody(tokens);
 
-        progstart->program = std::move(mainfn);
+        progstart->program.push_back(  std::move(mainfn));
         
 
         return progstart;
@@ -112,6 +117,15 @@ class Parser{
                 tokens.erase(tokens.begin());
             }
             //if token.type is something else then make push something else to statements
+            //
+            if (token.type==Identifier&&token.val=="log") {
+                unique_ptr<FuncCallNode> logcal=ParseFunctionCall(tokens);
+                //we also need to now make the function for print
+                //we should make start with a list of functions that are included with the program
+                //like print and stuff
+                statements.push_back(std::move(logcal));
+                tokens.erase(tokens.begin());
+            }
 
             tokens.erase(tokens.begin());
         }
@@ -129,6 +143,50 @@ class Parser{
         mainfn->name=token.val;
         return mainfn;
     }
+
+    unique_ptr<FuncCallNode> ParseFunctionCall(vector<Token>& tokens){
+        unique_ptr<FuncCallNode> call=make_unique<FuncCallNode>();
+        Token token=tokens[0];
+        tokens.erase(tokens.begin());
+        call->name=token.val;
+        
+        //parse arguments
+        //arguments are a list of ExprNode's in this case they are only iliterals
+        //arguments are inside () seperated by ,
+        call->arguments=ParseArguments(tokens);
+
+        return call;
+    }
+
+    vector<unique_ptr<ExprNode>> ParseArguments(vector<Token>& tokens){
+        vector<unique_ptr<ExprNode>> arguments;
+        
+        while (tokens[0].val!="(") {
+            tokens.erase(tokens.begin());
+        }
+
+
+        while (tokens[0].val!=")") {
+            //make literals from tokens that are not ,
+            if (tokens[0].type==Comma){
+                tokens.erase(tokens.begin());
+                continue;
+            }
+
+            if (tokens[0].type==IntLiteral) {
+                unique_ptr<ILiterealNode> nod=make_unique<ILiterealNode>();
+                nod->value=stoi(tokens[0].val); //val is string this makes it number
+                arguments.push_back(std::move(nod));
+            }else {
+                cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
+            }
+            tokens.erase(tokens.begin());
+        }
+        return arguments;
+
+    }
+
+    
 
 
 };
@@ -151,16 +209,16 @@ int main(){
     Lexer *lex= new Lexer();
     lex->lex();
     
-    //lex->PrintLex();
+    lex->PrintLex();
 
 
     Parser * parsr= new Parser();
     unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
 
 
-    //PrintEntireAST(nod.get());
+    PrintEntireAST(nod.get());
 
     //make assembly from this
-    generate_assemply(std::move(nod));
+    //generate_assemply(std::move(nod));
 
 }

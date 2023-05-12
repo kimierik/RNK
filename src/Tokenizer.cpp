@@ -21,6 +21,7 @@ enum TokenType{
     Identifier,//name
     IntLiteral,
     Colon,
+    Comma,
 };
 
 
@@ -103,6 +104,16 @@ class Lexer{
             }
             if (c==':') {
                 addToken(Colon, c);
+                cIndex++;
+                continue;
+            }
+            if (c==',') {
+                addToken(Comma, c);
+                cIndex++;
+                continue;
+            }
+            if (c==';') {
+                addToken(Semicolon, c);
                 cIndex++;
                 continue;
             }

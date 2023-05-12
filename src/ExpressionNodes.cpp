@@ -38,7 +38,7 @@ class StatementNode{  // :  public ExprNode{
 class FuncCallNode : public StatementNode{
     public:
     string name;
-    vector<ExprNode> arguments;
+    vector<unique_ptr<ExprNode>> arguments;
 }; 
 
 //function decleration
@@ -68,7 +68,7 @@ class ILiterealNode: public ExprNode{
 
 class ProgramNode: public ExprNode{
     public:
-    unique_ptr< FuncDeclNode> program;
+    vector<unique_ptr< FuncDeclNode>> program;
 };
 
 
@@ -93,6 +93,20 @@ void PrintExprNode(ExprNode* node){
 }
 
 
+void PrintFuncCallNode(FuncCallNode*node){
+    cout<<"calls function "<<node->name<<endl;
+    cout<<"\twith "<< node->arguments.size() <<" arguments\n";
+    
+    for ( int i=0; i<node->arguments.size();i++) {
+        ExprNode* arg=node->arguments[i].get();
+        if(dynamic_cast<ILiterealNode*>(arg)){
+            cout<<"\t int "<<dynamic_cast<ILiterealNode*>(arg)->value<<endl;
+        }else{
+            cout<<"ILITERAL IS ONLY DATATYPE SUPPORTED\n";
+        }
+    }
+}
+
 
 void PrintStatementNode(StatementNode* node){
     //statment nodes are
@@ -105,11 +119,11 @@ void PrintStatementNode(StatementNode* node){
         PrintExprNode(dynamic_cast<RetNode*>(node)->value.get());
     }
 
-
     if(dynamic_cast<FuncCallNode*>(node)){
-        cout<<"FUNCTION DEBUG PRINT IS UNIMPLEMENTED\n";
+        //cout<<"FUNCTION DEBUG PRINT IS UNIMPLEMENTED\n";
+        PrintFuncCallNode(dynamic_cast<FuncCallNode*>(node));
+        //c
     }
-
 
 }
 
@@ -117,26 +131,30 @@ void PrintStatementNode(StatementNode* node){
 //will crash if you have a recursive function
 void PrintEntireAST(ProgramNode* program){
     //TODO loop all function decleration nodes
+    //
+    for (int i =0; i< program->program.size(); i++) {
+    
+        cout<<":----Function----: "<<endl;
+        cout<<program->program[i]->name<<endl;
 
-    cout<<":----Function----: "<<endl;
-    cout<<program->program->name<<endl;
+        cout<<":----Params----: "<<endl;
+        for (int i=0 ; i< program->program[i]->params.size();i++) {
+            PrintExprNode(&program->program[i]->params[i]);
+            cout<<endl;
+        }
 
-    cout<<":----Params----: "<<endl;
-    for (int i=0 ; i< program->program->params.size();i++) {
-        PrintExprNode(&program->program->params[i]);
+        cout<<":----Body----: "<<endl;
+        //cout<<program->program[i]->body.size()<<endl;
+        for (int j=0 ; j< program->program[i]->body.size();j++) {
+            PrintStatementNode(program->program[i]->body.at(j).get());
+            cout<<endl;
+        }
+
+        cout<<":----Returns----: "<<endl;
+        cout<<program->program[i]->returnType;
         cout<<endl;
+        //this needs formatting
     }
-
-    cout<<":----Body----: "<<endl;
-    for (int i=0 ; i< program->program->body.size();i++) {
-        PrintStatementNode(program->program->body.at(i).get());
-        cout<<endl;
-    }
-
-    cout<<":----Returns----: "<<endl;
-    cout<<program->program->returnType;
-    cout<<endl;
-    //this needs formatting
     
 }
 
