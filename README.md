@@ -2,7 +2,7 @@
 just some language that i made to learn stuff at a lower level. this language is not meant to be used anywhere
 
 ## supports
-nothing rn lol
+printing numbers to stdout
 
 ## todo
 variables  
