@@ -32,6 +32,7 @@ class Parser{
     //we should do like a standard lib thing that auto defines certain functions
     //like log
     //so we can get used to calling actual functions in ass
+    //the fn should return a list of function definitions
 
 
     //parse expression
@@ -44,7 +45,7 @@ class Parser{
         unique_ptr<FuncDeclNode> mainfn= ParseFuncExpression( tokens);
         //todo find main
 
-        vector<ExprNode> emnt;
+        vector<TokenType> emnt;
         mainfn->params= emnt;// no params on main, will implement later
 
         mainfn->returnType=IntLiteral; // rn main is always int literal 
@@ -52,10 +53,43 @@ class Parser{
 
         mainfn->body=ParseFuncBody(tokens);
 
+        
+
+        vector<unique_ptr<FuncDeclNode>> standardFunctions=IncludeCoreFunctions();
+        for (int i=0; i<standardFunctions.size();i++) {
+            progstart->program.push_back(std::move(standardFunctions[i]));
+        }
+
         progstart->program.push_back(  std::move(mainfn));
         
 
         return progstart;
+    }
+
+
+
+    vector<unique_ptr<FuncDeclNode>> IncludeCoreFunctions(){
+        //fns have
+        //name
+        //body
+        //params
+        //return type
+        vector<unique_ptr<FuncDeclNode>> corefns;
+
+        //------------------------------LOG------------------------------//
+        //log does not have a body it is generated in asm
+        unique_ptr<FuncDeclNode> logfn= make_unique<FuncDeclNode>();
+        logfn->name="log";
+        logfn->returnType=Void;
+        vector<TokenType> logparams;
+        logparams.push_back(IntLiteral);
+        logparams.push_back(IntLiteral);
+        logfn->params=logparams;
+
+        corefns.push_back(std::move(logfn));
+
+
+        return corefns;
     }
 
 
@@ -178,7 +212,7 @@ class Parser{
                 nod->value=stoi(tokens[0].val); //val is string this makes it number
                 arguments.push_back(std::move(nod));
             }else {
-                cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
+                //cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
             }
             tokens.erase(tokens.begin());
         }
@@ -209,16 +243,16 @@ int main(){
     Lexer *lex= new Lexer();
     lex->lex();
     
-    lex->PrintLex();
+ //   lex->PrintLex();
 
 
     Parser * parsr= new Parser();
     unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
 
 
-    PrintEntireAST(nod.get());
+//PrintEntireAST(nod.get());
 
     //make assembly from this
-    //generate_assemply(std::move(nod));
+    generate_assemply(std::move(nod));
 
 }

@@ -45,7 +45,7 @@ class FuncCallNode : public StatementNode{
 class FuncDeclNode : public ExprNode{
     public:
     string name;
-    vector<ExprNode> params;
+    vector<TokenType> params;
     vector< unique_ptr<StatementNode>> body;
     TokenType returnType;
 }; 
@@ -128,6 +128,19 @@ void PrintStatementNode(StatementNode* node){
 }
 
 
+//this should be cdhanged to whatever changes enum names to strings
+void PrintParams(TokenType type){
+    if(type==IntLiteral){
+        cout<<"int\n";
+    }else{
+        cout<<"NO OTHER TYPES SUPPORTED\n";
+    }
+}
+
+
+
+
+
 //will crash if you have a recursive function
 void PrintEntireAST(ProgramNode* program){
     //TODO loop all function decleration nodes
@@ -137,10 +150,10 @@ void PrintEntireAST(ProgramNode* program){
         cout<<":----Function----: "<<endl;
         cout<<program->program[i]->name<<endl;
 
-        cout<<":----Params----: "<<endl;
-        for (int i=0 ; i< program->program[i]->params.size();i++) {
-            PrintExprNode(&program->program[i]->params[i]);
-            cout<<endl;
+        cout<<":----Params----: ";
+        cout<<program->program[i]->params.size() <<endl;
+        for (int j=0 ; j< program->program[i]->params.size();j++) {
+            PrintParams(program->program[i]->params[j]);
         }
 
         cout<<":----Body----: "<<endl;
@@ -152,6 +165,8 @@ void PrintEntireAST(ProgramNode* program){
 
         cout<<":----Returns----: "<<endl;
         cout<<program->program[i]->returnType;
+        cout<<endl;
+        cout<<endl;
         cout<<endl;
         //this needs formatting
     }

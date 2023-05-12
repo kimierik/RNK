@@ -1,5 +1,5 @@
 main():i{
-    log(6 , 1) ;
+    log(8 , 1) ;
     return 3 ;
 }
 

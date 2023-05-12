@@ -13,6 +13,7 @@
 using namespace std;
 
 enum TokenType{
+    Void,
     Brace,
     Paren,
     Semicolon,
