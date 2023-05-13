@@ -1,5 +1,10 @@
-main():i{
-    log(8 , 1) ;
-    return 3 ;
+myfunciton():{
+    log(7 , 1) ;
 }
 
+
+main():i{
+    log(8 , 1) ;
+    myfunciton();
+    return 3 ;
+}

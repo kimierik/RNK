@@ -41,17 +41,13 @@ class Parser{
     unique_ptr<ProgramNode> ParseExpression(vector<Token>& tokens){
         unique_ptr<ProgramNode> progstart= make_unique<ProgramNode>();
 
-
+        //we need to start finding function declerations from tokens
         unique_ptr<FuncDeclNode> mainfn= ParseFuncExpression( tokens);
-        //todo find main
+        tokens.erase(tokens.begin());
+        //loop this ^^ untill there are no more tokens
 
-        vector<TokenType> emnt;
-        mainfn->params= emnt;// no params on main, will implement later
+        unique_ptr<FuncDeclNode> anotfn= ParseFuncExpression( tokens);
 
-        mainfn->returnType=IntLiteral; // rn main is always int literal 
-                                       // we can make a function for this later
-
-        mainfn->body=ParseFuncBody(tokens);
 
         
 
@@ -61,6 +57,7 @@ class Parser{
         }
 
         progstart->program.push_back(  std::move(mainfn));
+        progstart->program.push_back(  std::move(anotfn));
         
 
         return progstart;
@@ -68,7 +65,7 @@ class Parser{
 
 
 
-    vector<unique_ptr<FuncDeclNode>> IncludeCoreFunctions(){
+    vector<unique_ptr<FuncDeclNode>> IncludeCoreFunctions(){//these should be in a .rnk file later not constructed in a compiler
         //fns have
         //name
         //body
@@ -150,8 +147,6 @@ class Parser{
                 statements.push_back(std::move(r));
                 tokens.erase(tokens.begin());
             }
-            //if token.type is something else then make push something else to statements
-            //
             if (token.type==Identifier&&token.val=="log") {
                 unique_ptr<FuncCallNode> logcal=ParseFunctionCall(tokens);
                 //we also need to now make the function for print
@@ -160,6 +155,15 @@ class Parser{
                 statements.push_back(std::move(logcal));
                 tokens.erase(tokens.begin());
             }
+            //parse a function vall how it should be done
+            //if it is an identifier and not a part of the core things
+
+            if (token.type==Identifier&&token.val!="log"&&token.val!="return") { //this is scuffed rn and need to be changed
+                unique_ptr<FuncCallNode> call=ParseFunctionCall(tokens);
+                statements.push_back(std::move(call));
+                tokens.erase(tokens.begin());
+            }
+
 
             tokens.erase(tokens.begin());
         }
@@ -169,12 +173,41 @@ class Parser{
     }
 
 
-    //parse function
+    //parse function decleration
     unique_ptr<FuncDeclNode> ParseFuncExpression(vector<Token>& tokens){
+        // assumes the firt token is the function name
+        // inits name,body, params, ret type
         unique_ptr<FuncDeclNode> mainfn= make_unique<FuncDeclNode>();
         Token token=tokens[0];
         tokens.erase(tokens.begin());
         mainfn->name=token.val;
+        while(tokens[0].val!=")"){
+            //figure out params
+            tokens.erase(tokens.begin());
+        }
+        //rn no params supported
+        vector<TokenType> emnt;
+        mainfn->params= emnt;
+        tokens.erase(tokens.begin());
+
+        //next token should be :
+        
+        tokens.erase(tokens.begin());//remove
+                                     
+        //then { or literal value
+        if(tokens[0].type!=Paren){
+            if(tokens[0].val=="i"){
+                mainfn->returnType=IntLiteral; 
+            }else{
+                mainfn->returnType=Void; 
+            }
+        }
+
+                                       
+
+        mainfn->body=ParseFuncBody(tokens);
+
+
         return mainfn;
     }
 
@@ -198,7 +231,7 @@ class Parser{
         while (tokens[0].val!="(") {
             tokens.erase(tokens.begin());
         }
-
+        tokens.erase(tokens.begin()); //index 0 should be"("
 
         while (tokens[0].val!=")") {
             //make literals from tokens that are not ,
@@ -212,7 +245,7 @@ class Parser{
                 nod->value=stoi(tokens[0].val); //val is string this makes it number
                 arguments.push_back(std::move(nod));
             }else {
-                //cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
+                cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
             }
             tokens.erase(tokens.begin());
         }
@@ -243,14 +276,14 @@ int main(){
     Lexer *lex= new Lexer();
     lex->lex();
     
- //   lex->PrintLex();
+    //lex->PrintLex();
 
 
     Parser * parsr= new Parser();
     unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
 
 
-//PrintEntireAST(nod.get());
+    //PrintEntireAST(nod.get());
 
     //make assembly from this
     generate_assemply(std::move(nod));
