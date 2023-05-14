@@ -54,11 +54,9 @@ void generate_assemply( unique_ptr<ProgramNode> program){
     //all my functions will have _ at the start for some reason now
     
 
-    //loop in the future
     
+    //this loop should be broken down into multiple functions
     for (int i =0; i< program->program.size(); i++) {
-
-
 
         string fnName=program->program[i]->name;
         if (program->program[i]->name=="main") {
@@ -83,18 +81,32 @@ void generate_assemply( unique_ptr<ProgramNode> program){
                 
                 if(dynamic_cast<FuncCallNode*>(statement)){
                     FuncCallNode* call=dynamic_cast<FuncCallNode*>(statement);
+
                     //call the function based on params
                     for (int i=call->arguments.size()-1; i>=0 ;i--){
                         //what type is the argument
                         if(dynamic_cast<ILiterealNode*>(call->arguments[i].get())){
                             ILiterealNode* n=dynamic_cast<ILiterealNode*>(call->arguments[i].get());
                             cout<<"\tpush $"<<n->value<<endl;
-                        }else{
-                            cout<<"INTIGERS ARE CURRENTLY ONLY SUPPORTED IN ASSEMBLY GENERATION\n";
+                            continue;
                         }
+
+                        if(dynamic_cast<ParamVarNode*>(call->arguments[i].get())){
+                            ParamVarNode* n=dynamic_cast<ParamVarNode*>(call->arguments[i].get());
+                            //we know how manyeth param this is
+                            //so we need to do like 8*(nth+2)(%rsp)//we are adding 2 since one of these is the instruction pointer that is gotten when this fn is called
+
+                            cout<<"\tpush "<<8*(n->nth+2)<<"(%rsp)"<<endl ;
+                            continue;
+                        }
+
+
+                        cout<<"unsupported datatype pushed";
                     }
-                    cout<<"\tcall "<<"_"<<call->name<<endl;
-                    //after call we must move rsp bu the amout we just pushed
+
+                    cout<<"\tcall "<<"_"<<call->name<<endl; 
+
+                    //after call we must pop what we pushed
                     for (int i=call->arguments.size()-1; i>=0 ;i--){
                         cout<<"\tpop "<<"%rax"<<endl;
                     }

@@ -78,9 +78,9 @@ class Parser{
         unique_ptr<FuncDeclNode> logfn= make_unique<FuncDeclNode>();
         logfn->name="log";
         logfn->returnType=Void;
-        vector<TokenType> logparams;
-        logparams.push_back(IntLiteral);
-        logparams.push_back(IntLiteral);
+        vector<Token> logparams;
+        logparams.push_back(Token(i32,"printable"));
+        logparams.push_back(Token(i32,"size"));
         logfn->params=logparams;
 
         corefns.push_back(std::move(logfn));
@@ -181,13 +181,25 @@ class Parser{
         Token token=tokens[0];
         tokens.erase(tokens.begin());
         mainfn->name=token.val;
+
+        vector<Token> params;
         while(tokens[0].val!=")"){
+
             //figure out params
+            //if token is int identifier
+            //this prob needs to run the lexer again to see what the tokens should be idk
+            //of just untill its an id
+            //there are 2 ids
+            //name and integer thing
+            //prob just split the i token into a int asibment thing
+            if (tokens[0].type==i32){
+                params.push_back(Token(tokens[0].type,tokens[0].val));
+            }
+            
             tokens.erase(tokens.begin());
         }
-        //rn no params supported
-        vector<TokenType> emnt;
-        mainfn->params= emnt;
+        
+        mainfn->params= params;
         tokens.erase(tokens.begin());
 
         //next token should be :
@@ -233,6 +245,7 @@ class Parser{
         }
         tokens.erase(tokens.begin()); //index 0 should be"("
 
+        int paramcounter=0;
         while (tokens[0].val!=")") {
             //make literals from tokens that are not ,
             if (tokens[0].type==Comma){
@@ -244,8 +257,32 @@ class Parser{
                 unique_ptr<ILiterealNode> nod=make_unique<ILiterealNode>();
                 nod->value=stoi(tokens[0].val); //val is string this makes it number
                 arguments.push_back(std::move(nod));
+                paramcounter++;
             }else {
-                cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
+                //cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
+                //trying to make an arg from x witch is a shorthand for the param that is given
+                //how do we represent it in here so that we know how to make asm from it
+                //should we just have it as some type that represents the first param
+                //we should be able to make asm from that then
+                //arguments are a list of expressions
+                //we should then just make an expression that is param value or somehitng like that 
+                //even though it prob is not an expression really
+            }
+            if (tokens[0].type==Identifier) {
+                //trying to make an arg from x witch is a shorthand for the param that is given
+                //how do we represent it in here so that we know how to make asm from it
+                //should we just have it as some type that represents the first param
+                //we should be able to make asm from that then
+                //arguments are a list of expressions
+                //we should then just make an expression that is param value or somehitng like that 
+                //even though it prob is not an expression really
+                unique_ptr<ParamVarNode> nod=make_unique<ParamVarNode>();
+                nod->name=tokens[0].val;
+                nod->type=tokens[0].type;
+                nod->nth=paramcounter;
+                arguments.push_back(std::move(nod));
+
+                paramcounter++;
             }
             tokens.erase(tokens.begin());
         }
@@ -271,21 +308,36 @@ class Parser{
 
 
 
-int main(){
-
-    Lexer *lex= new Lexer();
-    lex->lex();
-    
-    //lex->PrintLex();
+int main(int argc, char* argv[]){
 
 
-    Parser * parsr= new Parser();
-    unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
+
+    if (argc<=1) {
+        cout<<"use arguments "<<endl;
+        cout<<" -d and -b "<<endl;
+    }else{
+        Lexer *lex= new Lexer();
+        lex->lex();
+        lex->RecheckTokens();
+
+        Parser * parsr= new Parser();
+        if(strcmp(argv[1], "-d")){
+            lex->PrintLex();
+            unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
+            PrintEntireAST(nod.get());
+        }
+        if(strcmp(argv[1], "-b")){
+            unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
+            generate_assemply(std::move(nod));
+        }
+
+    }
 
 
-    //PrintEntireAST(nod.get());
+
+
+
 
     //make assembly from this
-    generate_assemply(std::move(nod));
 
 }

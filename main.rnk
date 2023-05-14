@@ -1,10 +1,10 @@
-myfunciton():{
-    log(7 , 1) ;
+myfunciton(x:i):{
+    log(x , 1) ;
 }
 
 
 main():i{
     log(8 , 1) ;
-    myfunciton();
+    myfunciton(7);
     return 3 ;
 }

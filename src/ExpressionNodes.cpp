@@ -45,7 +45,7 @@ class FuncCallNode : public StatementNode{
 class FuncDeclNode : public ExprNode{
     public:
     string name;
-    vector<TokenType> params;
+    vector<Token> params;
     vector< unique_ptr<StatementNode>> body;
     TokenType returnType;
 }; 
@@ -64,6 +64,13 @@ class RetNode: public StatementNode{
 class ILiterealNode: public ExprNode{
     public:
     int value;
+};
+
+class ParamVarNode: public ExprNode{
+    public:
+    int nth; //how manyeth parameter this one is
+    string name;
+    TokenType type;
 };
 
 class ProgramNode: public ExprNode{
@@ -101,9 +108,16 @@ void PrintFuncCallNode(FuncCallNode*node){
         ExprNode* arg=node->arguments[i].get();
         if(dynamic_cast<ILiterealNode*>(arg)){
             cout<<"\t int "<<dynamic_cast<ILiterealNode*>(arg)->value<<endl;
-        }else{
-            cout<<"ILITERAL IS ONLY DATATYPE SUPPORTED\n";
+            continue;
         }
+
+        if(dynamic_cast<ParamVarNode*>(arg)){
+            cout<<"\t varialbe "<<dynamic_cast<ParamVarNode*>(arg)->name<<" type: "<< dynamic_cast<ParamVarNode*>(arg)->type<<endl;
+            continue;
+        }
+
+
+        cout<<"NON SUPPORTED DATATYPE";
     }
 }
 
@@ -129,9 +143,9 @@ void PrintStatementNode(StatementNode* node){
 
 
 //this should be cdhanged to whatever changes enum names to strings
-void PrintParams(TokenType type){
-    if(type==IntLiteral){
-        cout<<"int\n";
+void PrintParams(Token tok){
+    if(tok.type==i32){
+        cout<<"\tint :"<<tok.val <<"\n";
     }else{
         cout<<"NO OTHER TYPES SUPPORTED\n";
     }

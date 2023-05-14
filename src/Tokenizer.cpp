@@ -17,7 +17,7 @@ enum TokenType{
     Brace,
     Paren,
     Semicolon,
-    i32,//unused
+    i32,
     Return,
     Identifier,//name
     IntLiteral,
@@ -32,6 +32,10 @@ enum TokenType{
 struct Token{
     TokenType type;
     string val;
+    Token(TokenType t, string v){
+        type=t;
+        val=v;
+    }
 };
 
 //lexer. returns a list of tokens tokens have a type and maybe a value
@@ -61,17 +65,11 @@ class Lexer{
 
 
     void addToken(TokenType type,string value){
-        Token a;
-        a.type=type;
-        a.val=value;
-        tokens.push_back(a);
+        tokens.push_back(Token(type,value));
     }
     void addToken(TokenType type,char value){
-        Token a;
-        a.type=type;
         string s(1,value);//!?!
-        a.val=s;
-        tokens.push_back(a);
+        tokens.push_back(Token(type,s));
     }
 
 
@@ -154,6 +152,17 @@ class Lexer{
             exit(1);
         }
 
+    }
+
+
+    void RecheckTokens(){
+        for(int i=0; i< tokens.size();i++){
+            if(tokens[i].val=="i"){
+                tokens[i].type=i32;
+            }
+
+
+        }
     }
 
 
