@@ -1,4 +1,6 @@
 #include <algorithm>
+
+#include <format>
 #include <cctype>
 #include <cstddef>
 #include <iostream>
@@ -145,9 +147,21 @@ class Parser{
 
 
 
+    VarDeclNode* getVaridec(string name, vector<unique_ptr<StatementNode>> *statements){
+        for (int i =0;i<statements->size() ; i++) {
+            VarDeclNode* var=dynamic_cast<VarDeclNode*>(statements->at(i).get());
+            if(var&&var->name==name){
+                return var;
+            }
+        
+        }
+        return nullptr;
+    }
 
-    vector<unique_ptr<StatementNode>> ParseFuncBody(vector<Token>& tokens){
-        // goes through tokens untill it meets '}' makes expressions out of them
+
+
+    vector<unique_ptr<StatementNode>> ParseFuncBody(vector<Token>& tokens,string fn_name){
+        // goes through tokens untill it meets '\a' makes expressions out of them
         vector<unique_ptr<StatementNode>> statements;
         while (tokens[0].val!="{") {
             tokens.erase(tokens.begin());
@@ -175,10 +189,9 @@ class Parser{
 
             if(token.type==Identifier && tokens[1].type==Colon ){
                 unique_ptr<VarDeclNode> vardecl= make_unique<VarDeclNode>();
-                vardecl->name=token.val;
+                vardecl->name=fn_name+token.val;
                 vardecl->nth=0;
                 //loop all vardecls in statements and increment their nth
-                
                 IncrementVarDecls(&statements);
                 statements.push_back(std::move(vardecl));
                 tokens.erase(tokens.begin());
@@ -187,7 +200,14 @@ class Parser{
 
             if(token.type==Identifier && tokens[1].type==Equals ){
                 unique_ptr<VarAssigmentNode> Assign=make_unique<VarAssigmentNode>();
-                Assign->toassign_name=token.val;
+                //Assign->variable=
+                //find var with same name  
+                VarDeclNode* var =getVaridec(fn_name+token.val, &statements);
+                if(!var){
+                    cout<<"NULL PTR VARIABLE ASSIGMENG"<<endl;
+                }
+
+                Assign->variable=var;
 
                 if (tokens[2].type==IntLiteral) {
                     unique_ptr<ILiterealNode> a=make_unique<ILiterealNode>();
@@ -245,7 +265,7 @@ class Parser{
         
         tokens.erase(tokens.begin());//remove
                                      
-        //then { or literal value
+        //then \{ or literal value
         if(tokens[0].type!=Paren){
             if(tokens[0].val=="i"){
                 mainfn->returnType=IntLiteral; 
@@ -256,12 +276,13 @@ class Parser{
 
                                        
 
-        mainfn->body=ParseFuncBody(tokens);
+        mainfn->body=ParseFuncBody(tokens,mainfn->name);
 
 
         return mainfn;
     }
 
+    //parses function call
     unique_ptr<FuncCallNode> ParseFunctionCall(vector<Token>& tokens){
         unique_ptr<FuncCallNode> call=make_unique<FuncCallNode>();
         Token token=tokens[0];
@@ -307,14 +328,9 @@ class Parser{
                 //we should then just make an expression that is param value or somehitng like that 
                 //even though it prob is not an expression really
             }
-            if (tokens[0].type==Identifier) {
-                //trying to make an arg from x witch is a shorthand for the param that is given
-                //how do we represent it in here so that we know how to make asm from it
-                //should we just have it as some type that represents the first param
-                //we should be able to make asm from that then
-                //arguments are a list of expressions
-                //we should then just make an expression that is param value or somehitng like that 
-                //even though it prob is not an expression really
+
+            if (tokens[0].type==Parameter) {
+                //cout<<"paramete";
                 unique_ptr<ParamVarNode> nod=make_unique<ParamVarNode>();
                 nod->name=tokens[0].val;
                 nod->type=tokens[0].type;
@@ -323,6 +339,22 @@ class Parser{
 
                 paramcounter++;
             }
+            //these clkash for some reason ^^vv
+            if (tokens[0].type==Identifier) {
+                //cout<<"variable";
+                //make this somehting else
+                //a type that is reasonable here
+                //needs value and type and maby nth
+                unique_ptr<VarUseageNode> nod=make_unique<VarUseageNode>();
+                nod->name=tokens[0].val;
+                nod->type=tokens[0].type;
+                nod->nth=paramcounter;
+                arguments.push_back(std::move(nod));
+
+                paramcounter++;//probnot needed
+            
+            }
+
             tokens.erase(tokens.begin());
         }
         return arguments;

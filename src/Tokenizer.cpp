@@ -24,6 +24,7 @@ enum TokenType{
     Colon,
     Comma,
     Equals,
+    Parameter,
 };
 
 
@@ -47,6 +48,7 @@ class Lexer{
     public:
     int row;
     int cursor;
+    bool inClosure=false;// if we are inside (...)
     
     vector<Token> tokens;
 
@@ -133,6 +135,8 @@ class Lexer{
                     str+=nchar;
                     nchar=line[++cIndex];
                 }
+                //this does not work
+                //ofc in closure THE FUNCTION CALL CLOSURE 
                 addToken(Identifier, str);
                 continue;
             }
@@ -163,14 +167,60 @@ class Lexer{
     }
 
 
+    //a horrible horrible function that mainly exists because i dont know how to lex properly
     void RecheckTokens(){
         for(int i=0; i< tokens.size();i++){
             if(tokens[i].val=="i"){
                 tokens[i].type=i32;
             }
+        }
+        //another loop lol
+        vector<string> ids;
+        bool inparens=false;
+        bool inbrakets=false;
+        for(int i=0; i< tokens.size();i++){
+            Token token=tokens[i];
+            
+            //check if we are in a function body or defenition or call etc
+            if(token.val=="}"){
+                inbrakets=false;
+                //if we leave brakets we should remove the ids
+                ids.clear();
+            }
+            if(token.val=="{"){
+                inbrakets=true;
+            }
 
+            if(token.val==")"){
+                inparens=false;
+            }
+            if(token.val=="("){
+                inparens=true;
+            }
+
+            //func definition
+            if(token.type==Identifier && !inbrakets && inparens){
+                ids.push_back(token.val);
+            }
+
+            //function call
+            if(token.type==Identifier && inbrakets && inparens){
+                //cout<<"thing"<<endl;
+                //if ids contains token.val; then change token.type to Parameter type
+                for (int j=0; j<ids.size(); j++) {
+                    //cout<<ids[j]<<endl;
+                    if(ids[j]==token.val){
+                        //cout<<"----------changed------------\n\n\n\n"; //this does not run at all
+                        tokens[i].type=Parameter;
+                    }
+                } 
+            }
+
+
+            
 
         }
+
     }
 
 

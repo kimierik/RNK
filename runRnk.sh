@@ -5,7 +5,7 @@
 
 case "$1" in
     -b|--build)
-        g++ rnkCompiler.cpp -o build/Compiler &&  ./build/Compiler -d > build/asem.s&&
+        g++ -g rnkCompiler.cpp -o build/Compiler &&  ./build/Compiler -d > build/asem.s&&
         as -g -o build/asem.o build/asem.s && gcc -o build/asem build/asem.o -nostdlib -static && ./build/asem ; echo -e "\nerror code: $?"
         ;;
     -d|--debug)

@@ -74,6 +74,14 @@ class ParamVarNode: public ExprNode{
     TokenType type;
 };
 
+class VarUseageNode: public ExprNode{//this is a small hack
+                                     //mainly used in seperationg paramn var and  var useage
+    public:
+    int nth; 
+    string name;
+    TokenType type;
+};
+
 class VarDeclNode: public StatementNode{
     public:
     string name;
@@ -82,7 +90,7 @@ class VarDeclNode: public StatementNode{
 
 class VarAssigmentNode: public StatementNode{
     public:
-    string toassign_name;
+    VarDeclNode* variable;
     unique_ptr<ExprNode> value;
 };
 
@@ -130,9 +138,13 @@ void PrintFuncCallNode(FuncCallNode*node){
             cout<<"\t int "<<dynamic_cast<ILiterealNode*>(arg)->value<<endl;
             continue;
         }
-
         if(dynamic_cast<ParamVarNode*>(arg)){
-            cout<<"\t varialbe "<<dynamic_cast<ParamVarNode*>(arg)->name<<" type: "<< dynamic_cast<ParamVarNode*>(arg)->type<<endl;
+            cout<<"\t variable (param)"<<dynamic_cast<ParamVarNode*>(arg)->name<<" type: "<< dynamic_cast<ParamVarNode*>(arg)->type<<endl;
+            continue;
+        }
+
+        if(dynamic_cast<VarUseageNode*>(arg)){
+            cout<<"\t variable "<<dynamic_cast<VarUseageNode*>(arg)->name<<" type: "<< dynamic_cast<VarUseageNode*>(arg)->type<<endl;
             continue;
         }
 
@@ -146,7 +158,7 @@ void PrintVarDeclNode(VarDeclNode* node){
 }
 
 void PrintVarAssignNode(VarAssigmentNode* node){
-    cout<<"Assigns var: " <<node->toassign_name<<" with: ";
+    cout<<"Assigns var: " <<node->variable->name<<" with: ";
     PrintExprNode( node->value.get()) ;
 }
 

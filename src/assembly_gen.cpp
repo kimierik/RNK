@@ -57,7 +57,17 @@ void generateFunctionCall(FuncCallNode* call){
             //we know how manyeth param this is
             //so we need to do like 8*(nth+2)(%rsp)//we are adding 2 since one of these is the instruction pointer that is gotten when this fn is called
 
-            cout<<"\tpush "<<8*(n->nth+2)<<"(%rsp)"<<endl ;
+            cout<<"\tpush "<<8*(n->nth+2)<<"(%rsp)#param"<<endl ;
+            //this is correct when in function where there is a stack pointer between the params
+            //but not if we want to acces var declared in this scope
+            //this means its a param varnode? should it not be ... idk what it should be
+            continue;
+        }
+        
+        if(dynamic_cast<VarUseageNode*>(call->arguments[i].get())){
+            VarUseageNode* n=dynamic_cast<VarUseageNode*>(call->arguments[i].get());
+
+            cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ;
             continue;
         }
 
@@ -76,6 +86,28 @@ void generateFunctionCall(FuncCallNode* call){
 }
 
 
+void generateVarDecl(VarDeclNode* node){
+    //var decl
+    //push something on to the stack
+    cout<< "\tpush $0"<<endl;
+}
+
+
+void generateVarAssigment(VarAssigmentNode* node){
+    //we need to find variable what is the nth value of it
+    //unless we save it to assigment node
+    //then  something like : cout<<"\tmov "<<" value we want to put here ,"<<8*(n->nth+?)<<"(%rsp)"<<endl ;
+    ILiterealNode* a= dynamic_cast<ILiterealNode*>(node->value.get());
+    if(a){
+        cout<<"\tmov $"<< a->value <<", " << 8*(node->variable->nth-1)  <<"(%rsp)" <<endl;
+
+    }else{
+        cout<<"ATTEMPTED TO GENERATE ASSIGMENT FOR NON INTIGER TYPE"<<endl;
+    }
+
+
+}
+
 
 void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
 
@@ -91,6 +123,16 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
         //if a function call 
         if(dynamic_cast<FuncCallNode*>(statement)){
             generateFunctionCall(dynamic_cast<FuncCallNode*>(statement));
+            continue;
+        }
+        
+        //if variable decleration
+        if(dynamic_cast<VarDeclNode*>(statement)){
+            generateVarDecl(dynamic_cast<VarDeclNode*>(statement));
+            continue;
+        }
+        if(dynamic_cast<VarAssigmentNode*>(statement)){
+            generateVarAssigment(dynamic_cast<VarAssigmentNode*>(statement));
             continue;
         }
 
@@ -131,23 +173,23 @@ void generate_assemply( unique_ptr<ProgramNode> program){
     
 
     
-    //this loop should be broken down into multiple functions
     for (int i =0; i< program->program.size(); i++) {
 
         string fnName=program->program[i]->name;
         if (program->program[i]->name=="main") {
-            //cout<<"_"<<"start:"<<endl; //this only when it is main functin
+            //swap main to start. so we can have a _start in asm
             fnName="start";
         }
-        //all should start with
-        //jmp _asdf_end
-        //_asdf
-        //{...}
-        //_asdf_end
 
+
+        //all functions have
+        //jmp _[fn name]_end
+        //_[fn name]
+        //{...}
+        //ret
+        //_[fn name]_end
         cout<<"jmp _" <<fnName<<"_end\n"; //jump over function incase we accidentally walk into it
         cout<<"_"<<fnName<<":\n";
-
         if(!generateCorefnAdd(program->program[i]->name)){ //if this function is not a core function
             generateFunctionBody(std::move(program->program[i]));
         }
