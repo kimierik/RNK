@@ -129,6 +129,23 @@ class Parser{
         return ret;
     }
 
+
+    //whenever we declare a value we put it on the stack
+    //every variable decleration has a "nth" value
+    //this value is used to see where on the stack the variable is
+    //this is called when a new var is declared. so it increments the nth of the older variables
+    void IncrementVarDecls(vector<unique_ptr<StatementNode>>* statements){
+        for(int i=0; i<statements->size();i++){
+            if (dynamic_cast<VarDeclNode*>( statements->at(i).get())){
+                VarDeclNode* node= dynamic_cast<VarDeclNode*>( statements->at(i).get());
+                node->nth=node->nth+1;
+            }
+        }
+    }
+
+
+
+
     vector<unique_ptr<StatementNode>> ParseFuncBody(vector<Token>& tokens){
         // goes through tokens untill it meets '}' makes expressions out of them
         vector<unique_ptr<StatementNode>> statements;
@@ -147,22 +164,44 @@ class Parser{
                 statements.push_back(std::move(r));
                 tokens.erase(tokens.begin());
             }
-            if (token.type==Identifier&&token.val=="log") {
-                unique_ptr<FuncCallNode> logcal=ParseFunctionCall(tokens);
-                //we also need to now make the function for print
-                //we should make start with a list of functions that are included with the program
-                //like print and stuff
-                statements.push_back(std::move(logcal));
-                tokens.erase(tokens.begin());
-            }
-            //parse a function vall how it should be done
-            //if it is an identifier and not a part of the core things
 
-            if (token.type==Identifier&&token.val!="log"&&token.val!="return") { //this is scuffed rn and need to be changed
+            if (token.type==Identifier && tokens[1].type==Paren){
                 unique_ptr<FuncCallNode> call=ParseFunctionCall(tokens);
                 statements.push_back(std::move(call));
                 tokens.erase(tokens.begin());
             }
+
+            //variable decleration id, semicolon, type
+
+            if(token.type==Identifier && tokens[1].type==Colon ){
+                unique_ptr<VarDeclNode> vardecl= make_unique<VarDeclNode>();
+                vardecl->name=token.val;
+                vardecl->nth=0;
+                //loop all vardecls in statements and increment their nth
+                
+                IncrementVarDecls(&statements);
+                statements.push_back(std::move(vardecl));
+                tokens.erase(tokens.begin());
+            }
+
+
+            if(token.type==Identifier && tokens[1].type==Equals ){
+                unique_ptr<VarAssigmentNode> Assign=make_unique<VarAssigmentNode>();
+                Assign->toassign_name=token.val;
+
+                if (tokens[2].type==IntLiteral) {
+                    unique_ptr<ILiterealNode> a=make_unique<ILiterealNode>();
+                    a->value=stoi(tokens[2].val);
+                    Assign->value=std::move(a);
+                    //cout<<a.value;
+                }else{
+                    cout<<"INT CAN ONLY BE ASSIGNED RN"<<endl;
+                }
+
+                statements.push_back(std::move(Assign));
+                tokens.erase(tokens.begin());
+            }
+
 
 
             tokens.erase(tokens.begin());

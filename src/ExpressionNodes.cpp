@@ -66,12 +66,27 @@ class ILiterealNode: public ExprNode{
     int value;
 };
 
+//this prob needs to change when we start to do actual variables
 class ParamVarNode: public ExprNode{
     public:
     int nth; //how manyeth parameter this one is
     string name;
     TokenType type;
 };
+
+class VarDeclNode: public StatementNode{
+    public:
+    string name;
+    int nth;
+};
+
+class VarAssigmentNode: public StatementNode{
+    public:
+    string toassign_name;
+    unique_ptr<ExprNode> value;
+};
+
+
 
 class ProgramNode: public ExprNode{
     public:
@@ -94,8 +109,13 @@ void PrintILiteral(ILiterealNode* node){
 //or make function for each node seperately
 void PrintExprNode(ExprNode* node){
     //iliteral and function declatarion
+    if (!node) {
+        cout<<"attempting to print null prt";
+    }
     if(dynamic_cast<ILiterealNode*>(node)){
         PrintILiteral(dynamic_cast<ILiterealNode*>(node));
+    }else{
+        cout<<"CAN ONLY PRINT I LITERAL NODES";
     }
 }
 
@@ -121,11 +141,22 @@ void PrintFuncCallNode(FuncCallNode*node){
     }
 }
 
+void PrintVarDeclNode(VarDeclNode* node){
+    cout<<"Declares "<<node->nth <<"'th variable: "<<node->name<<endl;
+}
+
+void PrintVarAssignNode(VarAssigmentNode* node){
+    cout<<"Assigns var: " <<node->toassign_name<<" with: ";
+    PrintExprNode( node->value.get()) ;
+}
+
 
 void PrintStatementNode(StatementNode* node){
     //statment nodes are
     //func call
     //retnode
+    //var decl 
+    //var assigned
 
     //if staement is return
     if(dynamic_cast<RetNode*>(node)){
@@ -137,6 +168,13 @@ void PrintStatementNode(StatementNode* node){
         //cout<<"FUNCTION DEBUG PRINT IS UNIMPLEMENTED\n";
         PrintFuncCallNode(dynamic_cast<FuncCallNode*>(node));
         //c
+    }
+    if(dynamic_cast<VarDeclNode*>(node)){
+        PrintVarDeclNode(dynamic_cast<VarDeclNode*>(node));
+    }
+
+    if(dynamic_cast<VarAssigmentNode*>(node)){
+        PrintVarAssignNode(dynamic_cast<VarAssigmentNode*>(node));
     }
 
 }

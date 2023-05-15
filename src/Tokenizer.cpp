@@ -23,6 +23,7 @@ enum TokenType{
     IntLiteral,
     Colon,
     Comma,
+    Equals,
 };
 
 
@@ -91,6 +92,13 @@ class Lexer{
                 cIndex++;
                 continue;
             }
+
+            if (c=='=') {
+                addToken(Equals, c);
+                cIndex++;
+                continue;
+            }
+
             if (c==')') {
                 addToken(Paren, c);
                 cIndex++;
