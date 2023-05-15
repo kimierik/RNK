@@ -3,7 +3,7 @@ just some language that i made to learn stuff at a lower level. this language is
 
 ## supports
 printing numbers to stdout  
-functions (primitively)
+functions (primitively)  
 variables (only singular integers)
 
 ## todo
