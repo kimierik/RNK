@@ -144,6 +144,7 @@ class Parser{
             }
         }
     }
+    //we also need to do the above for parameters we need to increment all nth's of all params of this fn
 
 
 
@@ -153,7 +154,6 @@ class Parser{
             if(var&&var->name==name){
                 return var;
             }
-        
         }
         return nullptr;
     }

@@ -37,7 +37,7 @@ bool generateCorefnAdd(string name){
 }
 
 
-void generateFunctionCall(FuncCallNode* call){
+void generateFunctionCall(FuncCallNode* call, int variableDeclCount){
 
     //call the function based on params
     for (int i=call->arguments.size()-1; i>=0 ;i--){
@@ -57,14 +57,16 @@ void generateFunctionCall(FuncCallNode* call){
             //we know how manyeth param this is
             //so we need to do like 8*(nth+2)(%rsp)//we are adding 2 since one of these is the instruction pointer that is gotten when this fn is called
 
-            cout<<"\tpush "<<8*(n->nth+2)<<"(%rsp)#param"<<endl ;
-            //this is correct when in function where there is a stack pointer between the params
-            //but not if we want to acces var declared in this scope
-            //this means its a param varnode? should it not be ... idk what it should be
+            //this needs to know that we have pushed a param on to the stack
+            cout<<"\tpush "<<8*(n->nth+2+variableDeclCount)<<"(%rsp)#param"<<endl ;
+
+
             continue;
         }
         
         if(dynamic_cast<VarUseageNode*>(call->arguments[i].get())){
+            //push a variable onto to top of the stack
+            //this is used when we are using a variable as a parameter
             VarUseageNode* n=dynamic_cast<VarUseageNode*>(call->arguments[i].get());
 
             cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ;
@@ -110,6 +112,7 @@ void generateVarAssigment(VarAssigmentNode* node){
 
 
 void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
+    int variableCount=0;
 
     //loop all statements in the function body
     for(int expressionIndex=0;expressionIndex< function->body.size();expressionIndex++){
@@ -122,12 +125,13 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
         
         //if a function call 
         if(dynamic_cast<FuncCallNode*>(statement)){
-            generateFunctionCall(dynamic_cast<FuncCallNode*>(statement));
+            generateFunctionCall(dynamic_cast<FuncCallNode*>(statement),variableCount);
             continue;
         }
         
         //if variable decleration
         if(dynamic_cast<VarDeclNode*>(statement)){
+            variableCount++;
             generateVarDecl(dynamic_cast<VarDeclNode*>(statement));
             continue;
         }
@@ -155,6 +159,16 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
             }
         }//ret if end
     }
+
+
+
+    //for every variable declared we must now pop them
+    //if we do not the return adress is not at the top and we cannot get to it with ret
+    for (int i=0; i<variableCount; i++) {
+        cout<<"\tpop %rax"<<endl;
+    }
+
+
 }
 
 

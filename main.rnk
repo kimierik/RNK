@@ -1,4 +1,5 @@
 myfunciton(x:i):{
+    vara:i;
     log(x , 1) ;
 }
 
