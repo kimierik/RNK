@@ -105,8 +105,6 @@ class Parser{
             unique_ptr<ILiterealNode> retval= make_unique<ILiterealNode>() ; 
             retval->value=stoi( tokens[1].val);
 
-            //cout<< "retvalue is assigned as"<<"\n";
-            //cout<< retval->value<<"\n";
 
             ret->value = std::move(retval);
             tokens.erase(tokens.begin());
@@ -136,9 +134,9 @@ class Parser{
 
 
 
-    VarDeclNode* getVaridec(string name, vector<unique_ptr<StatementNode>> *statements){
-        for (int i =0;i<statements->size() ; i++) {
-            VarDeclNode* var=dynamic_cast<VarDeclNode*>(statements->at(i).get());
+    VarDeclNode* getVaridec(string name ){
+        for (int i =0;i<current_statements->size() ; i++) {
+            VarDeclNode* var=dynamic_cast<VarDeclNode*>(current_statements->at(i).get());
             if(var&&var->name==name){
                 return var;
             }
@@ -162,7 +160,6 @@ class Parser{
                 //maybe check ret value here
                 unique_ptr<RetNode> r=ParseRetExpression(tokens);
 
-                //cout<< dynamic_cast<ILiterealNode*>(r->value.get())->value;
 
                 statements.push_back(std::move(r));
                 tokens.erase(tokens.begin());
@@ -189,7 +186,7 @@ class Parser{
 
             // parse variabl assigments assigments
             if(token.type==Identifier && tokens[1].type==Equals ){
-                statements.push_back(std::move(ParseVarAssignStatement(tokens,fn_name,&statements)));
+                statements.push_back(std::move(ParseVarAssignStatement(tokens)));
                 tokens.erase(tokens.begin());
             }
 
@@ -203,7 +200,7 @@ class Parser{
     }
 
 
-    unique_ptr<ExprNode> getOperandThing(Token* token,vector<unique_ptr<StatementNode>>* statements){
+    unique_ptr<ExprNode> getOperandThing(Token* token){
         //switch case token type
         
         if(token->type==IntLiteral){
@@ -228,7 +225,7 @@ class Parser{
         if(token->type==Identifier){
             //if this is a var should we get the var decl and use that
             // this is the variable that we are accessing we should be able to 
-            VarDeclNode* declnode= getVaridec(*current_fn_name+token->val, statements);
+            VarDeclNode* declnode= getVaridec(*current_fn_name+token->val);
             unique_ptr<VarUseageNode > varuse= make_unique<VarUseageNode>();
             varuse->name=token->val;
             varuse->nth=declnode->nth;
@@ -244,14 +241,12 @@ class Parser{
     }
 
     
-    unique_ptr<VarAssigmentNode> ParseVarAssignStatement(vector<Token>& tokens,string fn_name, vector<unique_ptr<StatementNode>>* statements){
+    unique_ptr<VarAssigmentNode> ParseVarAssignStatement(vector<Token>& tokens){
         Token token=tokens[0];
         unique_ptr<VarAssigmentNode> Assign=make_unique<VarAssigmentNode>();
 
-        //Assign->variable=
-        //find var with same name  
         
-        VarDeclNode* var =getVaridec(fn_name+token.val, statements);
+        VarDeclNode* var =getVaridec(*current_fn_name+token.val);
         if(!var){
             cout<<"NULL PTR VARIABLE ASSIGMENG"<<endl;
         }
@@ -268,8 +263,8 @@ class Parser{
         if (tokens[3].type==Operator){
             //operand only add change when change op
             unique_ptr<AddOperand> opp = make_unique<AddOperand>();
-            unique_ptr<ExprNode> left =getOperandThing(&tokens[2],statements);
-            unique_ptr<ExprNode> right =getOperandThing(&tokens[4],statements);
+            unique_ptr<ExprNode> left =getOperandThing(&tokens[2]);
+            unique_ptr<ExprNode> right =getOperandThing(&tokens[4]);
             opp->left=std::move(left);
             opp->right=std::move(right);
             //assign left and right
@@ -284,8 +279,6 @@ class Parser{
                 a->value=stoi(tokens[2].val);
                 Assign->value=std::move(a);
                 //cout<<a.value;
-            }else{
-                //cout<<"INT CAN ONLY BE ASSIGNED RN"<<endl;
             }
 
         }
@@ -304,22 +297,17 @@ class Parser{
         mainfn->name=token.val;
         current_fn_name=&mainfn->name;
 
+        //figures out parameters this function accepts
         vector<Token> params;
         while(tokens[0].val!=")"){
 
-            //figure out params
-            //if token is int identifier
-            //this prob needs to run the lexer again to see what the tokens should be idk
-            //of just untill its an id
-            //there are 2 ids
-            //name and integer thing
-            //prob just split the i token into a int asibment thing
             if (tokens[0].type==i32){
                 params.push_back(Token(tokens[0].type,tokens[0].val));
             }
             
             tokens.erase(tokens.begin());
         }
+
         
         mainfn->params= params;
         tokens.erase(tokens.begin());
@@ -381,17 +369,10 @@ class Parser{
                 nod->value=stoi(tokens[0].val); //val is string this makes it number
                 arguments.push_back(std::move(nod));
                 paramcounter++;
-            }else {
-                //cout<<"CANNOT MAKE AN ARGUMENT FROM NON ILITERAL\n";
-                //trying to make an arg from x witch is a shorthand for the param that is given
-                //how do we represent it in here so that we know how to make asm from it
-                //should we just have it as some type that represents the first param
-                //we should be able to make asm from that then
-                //arguments are a list of expressions
-                //we should then just make an expression that is param value or somehitng like that 
-                //even though it prob is not an expression really
             }
+            
 
+            //if the argument is a parameter 
             if (tokens[0].type==Parameter) {
                 unique_ptr<ParamVarNode> nod=make_unique<ParamVarNode>();
                 nod->name=tokens[0].val;
@@ -404,10 +385,9 @@ class Parser{
 
             if (tokens[0].type==Identifier) {
                 unique_ptr<VarUseageNode> nod=make_unique<VarUseageNode>();
-                VarDeclNode* decl= getVaridec(*current_fn_name+tokens[0].val, current_statements);
+                VarDeclNode* decl= getVaridec(*current_fn_name+tokens[0].val);
                 if (decl==nullptr){
                     cout <<"error\n";
-
                 }
                 nod->name=tokens[0].val; 
                 nod->type=tokens[0].type;
@@ -423,8 +403,6 @@ class Parser{
         return arguments;
 
     }
-
-    
 
 
 };

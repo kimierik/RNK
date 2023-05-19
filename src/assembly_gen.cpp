@@ -70,7 +70,7 @@ void generateFunctionCall(FuncCallNode* call, int variableDeclCount){
             //this is used when we are using a variable as a parameter
             VarUseageNode* n=dynamic_cast<VarUseageNode*>(call->arguments[i].get());
 
-            cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ; //i think this is 0+2*8 twice means nth has not been working at all xd
+            cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ; //+1 to offset indexing starting at 0?
             continue;
         }
 
@@ -147,8 +147,6 @@ void generateVarAssigment(VarAssigmentNode* node){
     if(a){
         cout<<"\tmov $"<< a->value <<", " << 8*(node->variable->nth)  <<"(%rsp)" <<endl; //TODO remove the -1 from nth
 
-    }else{
-    //    cout<<"ATTEMPTED TO GENERATE ASSIGMENT FOR NON INTIGER TYPE"<<endl;
     }
 
     if(dynamic_cast<AddOperand*>(node->value.get())){
