@@ -8,8 +8,10 @@ main():i{
     varname:i;
     vartwoname:i;
     varname=3;
+    vartwoname=4+1;
     log(8 , 1) ;
     log(varname,1);
+    log(vartwoname,1);
     myfunciton(7);
     return 3 ;
 }

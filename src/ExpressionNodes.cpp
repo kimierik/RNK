@@ -98,14 +98,36 @@ class VarAssigmentNode: public StatementNode{
 
 class ProgramNode: public ExprNode{
     public:
-    vector<unique_ptr< FuncDeclNode>> program;
+    vector<unique_ptr< FuncDeclNode >> program;
+};
+
+
+class AddOperand:public ExprNode{
+    public:
+    unique_ptr<ExprNode>left;      //pointer or uniq pointer  idk if we can do uniq but idk why not
+    unique_ptr<ExprNode> right;
 };
 
 
 
 
-
 //logging
+
+
+void PrintOps(AddOperand* node){
+
+    if (dynamic_cast<ILiterealNode*>(node->left.get())){
+        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(node->left.get());
+        cout<<ilit->value;
+    }
+    cout<<" + ";
+
+    if (dynamic_cast<ILiterealNode*>(node->right.get())){
+        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(node->right.get());
+        cout<<ilit->value<<endl;
+    }
+
+}
 
 
 
@@ -122,8 +144,9 @@ void PrintExprNode(ExprNode* node){
     }
     if(dynamic_cast<ILiterealNode*>(node)){
         PrintILiteral(dynamic_cast<ILiterealNode*>(node));
-    }else{
-        cout<<"CAN ONLY PRINT I LITERAL NODES";
+    }
+    if(dynamic_cast<AddOperand*>(node)){
+        PrintOps(dynamic_cast<AddOperand*>(node));
     }
 }
 

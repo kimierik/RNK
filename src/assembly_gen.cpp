@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <string>
 #include "./Tokenizer.cpp"
 
 
@@ -57,7 +58,7 @@ void generateFunctionCall(FuncCallNode* call, int variableDeclCount){
             //we know how manyeth param this is
             //so we need to do like 8*(nth+2)(%rsp)//we are adding 2 since one of these is the instruction pointer that is gotten when this fn is called
 
-            //this needs to know that we have pushed a param on to the stack
+            //this needs to know that we have pushed a param&variable on to the stack
             cout<<"\tpush "<<8*(n->nth+2+variableDeclCount)<<"(%rsp)#param"<<endl ;
 
 
@@ -69,7 +70,7 @@ void generateFunctionCall(FuncCallNode* call, int variableDeclCount){
             //this is used when we are using a variable as a parameter
             VarUseageNode* n=dynamic_cast<VarUseageNode*>(call->arguments[i].get());
 
-            cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ;
+            cout<<"\tpush "<<8*(n->nth+1)<<"(%rsp)#var"<<endl ; //i think this is 0+2*8 twice means nth has not been working at all xd
             continue;
         }
 
@@ -95,20 +96,57 @@ void generateVarDecl(VarDeclNode* node){
 }
 
 
+
+void generateOpp( AddOperand* opp){
+    //what get the expresisons of the thingsd and add them together
+    string l;
+    string r;
+
+    //this is kinda bad design
+    //manually check left and right node for their type by checking if casting it to the type does not return null
+
+
+    if (dynamic_cast<ILiterealNode*>(opp->left.get())){
+        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(opp->left.get());
+        l=to_string(ilit->value);
+    }else{
+        cout<<"not a ilit\n";
+    }
+
+    if (dynamic_cast<ILiterealNode*>(opp->right.get())){
+        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(opp->right.get());
+        r=to_string( ilit->value);
+    }
+
+    cout<<"\tmov $"<<l<<", %rax"<<endl;
+    cout<<"\tadd $"<<r<<", %rax"<<endl;
+
+    
+}
+
+
 void generateVarAssigment(VarAssigmentNode* node){
     //we need to find variable what is the nth value of it
     //unless we save it to assigment node
     //then  something like : cout<<"\tmov "<<" value we want to put here ,"<<8*(n->nth+?)<<"(%rsp)"<<endl ;
     ILiterealNode* a= dynamic_cast<ILiterealNode*>(node->value.get());
     if(a){
-        cout<<"\tmov $"<< a->value <<", " << 8*(node->variable->nth-1)  <<"(%rsp)" <<endl;
+        cout<<"\tmov $"<< a->value <<", " << 8*(node->variable->nth)  <<"(%rsp)" <<endl; //TODO remove the -1 from nth
 
     }else{
-        cout<<"ATTEMPTED TO GENERATE ASSIGMENT FOR NON INTIGER TYPE"<<endl;
+    //    cout<<"ATTEMPTED TO GENERATE ASSIGMENT FOR NON INTIGER TYPE"<<endl;
+    }
+
+    if(dynamic_cast<AddOperand*>(node->value.get())){
+        generateOpp(dynamic_cast<AddOperand*>(node->value.get()));
+        cout<<"\tmov %rax"<<", " <<8*(node->variable->nth)  <<"(%rsp)"<<endl;
     }
 
 
 }
+
+
+
 
 
 void generateFunctionBody(unique_ptr<FuncDeclNode> function ){

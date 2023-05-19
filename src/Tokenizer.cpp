@@ -25,6 +25,7 @@ enum TokenType{
     Comma,
     Equals,
     Parameter,
+    Operator,
 };
 
 
@@ -123,6 +124,11 @@ class Lexer{
             }
             if (c==';') {
                 addToken(Semicolon, c);
+                cIndex++;
+                continue;
+            }
+            if (c=='+') {
+                addToken(Operator, c);
                 cIndex++;
                 continue;
             }
