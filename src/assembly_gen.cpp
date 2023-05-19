@@ -97,6 +97,26 @@ void generateVarDecl(VarDeclNode* node){
 
 
 
+string GetExprValue(ExprNode*node){
+
+    if (dynamic_cast<ILiterealNode*>(node)){
+        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(node);
+        return "$"+to_string(ilit->value);
+    }
+
+    if (dynamic_cast<VarUseageNode*>(node)){
+        VarUseageNode* ilit =dynamic_cast<VarUseageNode*>(node);
+        //get offset from var useage
+        int off = 8*(ilit->nth);
+        return to_string(off)+"(%rsp)";
+    }
+
+
+
+    cout <<" unable to get valur from expression "<<endl;
+    return "ERROR VALUE";
+}
+
 void generateOpp( AddOperand* opp){
     //what get the expresisons of the thingsd and add them together
     string l;
@@ -106,20 +126,14 @@ void generateOpp( AddOperand* opp){
     //manually check left and right node for their type by checking if casting it to the type does not return null
 
 
-    if (dynamic_cast<ILiterealNode*>(opp->left.get())){
-        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(opp->left.get());
-        l=to_string(ilit->value);
-    }else{
-        cout<<"not a ilit\n";
-    }
+    
+    l=GetExprValue(opp->left.get());
 
-    if (dynamic_cast<ILiterealNode*>(opp->right.get())){
-        ILiterealNode* ilit =dynamic_cast<ILiterealNode*>(opp->right.get());
-        r=to_string( ilit->value);
-    }
+    r=GetExprValue(opp->right.get());
 
-    cout<<"\tmov $"<<l<<", %rax"<<endl;
-    cout<<"\tadd $"<<r<<", %rax"<<endl;
+
+    cout<<"\tmov "<<l<<", %rax"<<endl;
+    cout<<"\tadd "<<r<<", %rax"<<endl;
 
     
 }

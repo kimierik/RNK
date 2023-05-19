@@ -24,8 +24,10 @@ int main(int argc, char* argv[]){
 
         Parser * parsr= new Parser();
         if(strcmp(argv[1], "-d")){
+            cout<<"tokens :"<<endl;
             lex->PrintLex();
             unique_ptr<ProgramNode> nod= parsr->ParseExpression(lex->tokens);
+            cout<<"AST :"<<endl;
             PrintEntireAST(nod.get());
         }
         if(strcmp(argv[1], "-b")){

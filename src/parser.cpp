@@ -39,7 +39,7 @@ class Parser{
         unique_ptr<FuncDeclNode> anotfn= ParseFuncExpression( tokens);
 
 
-        
+
 
         vector<unique_ptr<FuncDeclNode>> standardFunctions=IncludeCoreFunctions();
         for (int i=0; i<standardFunctions.size();i++) {
@@ -228,7 +228,7 @@ class Parser{
         if(token->type==Identifier){
             //if this is a var should we get the var decl and use that
             // this is the variable that we are accessing we should be able to 
-            VarDeclNode* declnode= getVaridec(token->val, statements);
+            VarDeclNode* declnode= getVaridec(*current_fn_name+token->val, statements);
             unique_ptr<VarUseageNode > varuse= make_unique<VarUseageNode>();
             varuse->name=token->val;
             varuse->nth=declnode->nth;
