@@ -4,8 +4,8 @@ just some language that i made to learn stuff at a lower level. this language is
 ## supports
 printing numbers to stdout  
 functions (primitively)  
-variables (only singular integers)
+variables (only singular integers)  
+operands  (only + for ints)
 
 ## todo
-operands  
 cool stuff  
