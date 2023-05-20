@@ -31,23 +31,21 @@ class Parser{
     unique_ptr<ProgramNode> ParseExpression(vector<Token>& tokens){
         unique_ptr<ProgramNode> progstart= make_unique<ProgramNode>();
 
-        //we need to start finding function declerations from tokens
-        unique_ptr<FuncDeclNode> mainfn= ParseFuncExpression( tokens);
-        tokens.erase(tokens.begin());
-        //loop this ^^ untill there are no more tokens
-
-        unique_ptr<FuncDeclNode> anotfn= ParseFuncExpression( tokens);
-
-
-
 
         vector<unique_ptr<FuncDeclNode>> standardFunctions=IncludeCoreFunctions();
         for (int i=0; i<standardFunctions.size();i++) {
             progstart->program.push_back(std::move(standardFunctions[i]));
         }
 
-        progstart->program.push_back(  std::move(mainfn));
-        progstart->program.push_back(  std::move(anotfn));
+
+        //we need to start finding function declerations from tokens
+        while (!tokens.empty()) {
+        
+            unique_ptr<FuncDeclNode> mainfn= ParseFuncExpression( tokens);
+            tokens.erase(tokens.begin());
+            progstart->program.push_back(  std::move(mainfn));
+        }
+
         
 
         return progstart;
