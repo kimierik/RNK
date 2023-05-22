@@ -41,9 +41,8 @@ struct Token{
     }
 };
 
-//lexer. returns a list of tokens tokens have a type and maybe a value
-//should we make this lexer into a class
-//it reads one line at a time (as string) and lexes it 
+//lexer. returns a list of tokens tokens have a type and a value
+//it reads one line at a time (as string) and lexes it
 class Lexer{
 
     public:
@@ -133,6 +132,7 @@ class Lexer{
                 continue;
             }
 
+            //identifiers like function names and variable names
             if (isalpha(c)) {
                 string str="";
                 str+=c;
@@ -148,6 +148,7 @@ class Lexer{
             }
 
 
+            //int literals
             if(isalnum(c)){
                 string str="";
                 str+=c;

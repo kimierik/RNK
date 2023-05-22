@@ -64,7 +64,16 @@ void generateFunctionCall(FuncCallNode* call, int variableDeclCount){
 
             continue;
         }
-        
+
+        if(dynamic_cast<FuncCallNode*>(call->arguments[i].get())){
+            FuncCallNode* c=dynamic_cast<FuncCallNode*>(call->arguments[i].get());
+            //infinitely recursive xd
+            generateFunctionCall(c, variableDeclCount);
+            cout<<"\tpush %rbx"<<endl;
+            continue;
+        }
+
+
         if(dynamic_cast<VarUseageNode*>(call->arguments[i].get())){
             //push a variable onto to top of the stack
             //this is used when we are using a variable as a parameter
@@ -208,10 +217,6 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
                 cout <<"\tret"<<endl;
             }
 
-
-
-
-
         }//ret if end
     }
 
@@ -243,8 +248,9 @@ void generate_assemply( unique_ptr<ProgramNode> program){
     cout << "_start:"<<endl;
     cout << "\tcall _main"<<endl;
 
+    //exit syscall
     cout <<"\tmov $60 , %rax"<<endl;
-    cout <<"\tmov "<<"%rbx"<< ", %rdi"<<endl;
+    cout <<"\tmov "<<"%rbx"<< ", %rdi"<<endl; //whatever is in rbx aka mains return is output as error code
     cout <<"\tsyscall"<<endl;
 
 
@@ -260,12 +266,12 @@ void generate_assemply( unique_ptr<ProgramNode> program){
         //{...}
         //ret
         //_[fn name]_end
-        cout<<"jmp _" <<fnName<<"_end\n"; //jump over function incase we accidentally walk into it
+        cout<<"jmp _" <<fnName<<"_end\n";  //jump over function incase we accidentally walk into it without calling it
         cout<<"_"<<fnName<<":\n";
         if(!generateCorefnAdd(program->program[i]->name)){ //if this function is not a core function
             generateFunctionBody(std::move(program->program[i]));
         }
-        cout<<"\tret"<<endl;
+        cout<<"\tret"<<endl; //this ret is here even though we might return before this incase we have functions witout a return statement
         cout<<"_"<<fnName<<"_end:"<<endl;
     }
 

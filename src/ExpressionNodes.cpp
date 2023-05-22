@@ -19,14 +19,16 @@ using namespace std;
 
 //ast nodes
 //
-//parent. every node inherrits this for polymorphism
+//parent.
+//expression is basically anything that can be used as a parameter. ops, function calls, literals
 class ExprNode{
     public:
         virtual ~ExprNode(){};
 };
 
 
-class StatementNode{  // :  public ExprNode{ 
+//statements are statements. function calls, assigments, etc
+class StatementNode{
     //this is statements  like +=- return, func call stuff like that
     //stuff that does things and is inside a function body
     public:
@@ -34,7 +36,7 @@ class StatementNode{  // :  public ExprNode{
 };
 
 
-//function. node probably return is here aswell
+//statement that represents function call
 class FuncCallNode : public StatementNode, public ExprNode{
     public:
     string name;
@@ -88,23 +90,23 @@ class VarDeclNode: public StatementNode{
     int nth;
 };
 
+//assigning values to variables
 class VarAssigmentNode: public StatementNode{
     public:
     VarDeclNode* variable;
     unique_ptr<ExprNode> value;
 };
 
-
-
+//the entire program
 class ProgramNode: public ExprNode{
     public:
     vector<unique_ptr< FuncDeclNode >> program;
 };
 
-
+//operation
 class AddOperand:public ExprNode{
     public:
-    unique_ptr<ExprNode>left;      //pointer or uniq pointer  idk if we can do uniq but idk why not
+    unique_ptr<ExprNode>left;
     unique_ptr<ExprNode> right;
 };
 
@@ -154,15 +156,19 @@ void PrintFuncCallNode(FuncCallNode*node){
             cout<<"\t variable "<<dynamic_cast<VarUseageNode*>(arg)->name<<" type: "<< dynamic_cast<VarUseageNode*>(arg)->type<<endl;
             continue;
         }
+        if(dynamic_cast<FuncCallNode*>(arg)){
+            FuncCallNode* call=dynamic_cast<FuncCallNode*>(arg);
+            cout <<"\t functions " << call->name <<endl;
+            continue;
+        }
 
 
-        cout<<"NON SUPPORTED DATATYPE";
+        cout<<"NON SUPPORTED DATATYPE"<<endl;
     }
 }
 //see what is the child of this node then print it aproprietly
 //or make function for each node seperately
 void PrintExprNode(ExprNode* node){
-    //iliteral and function declatarion
     if (!node) {
         cout<<"attempting to print null prt";
     }

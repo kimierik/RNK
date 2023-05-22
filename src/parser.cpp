@@ -391,17 +391,24 @@ class Parser{
             }
 
             if (tokens[0].type==Identifier) {
-                unique_ptr<VarUseageNode> nod=make_unique<VarUseageNode>();
-                VarDeclNode* decl= getVaridec(*current_fn_name+tokens[0].val);
-                if (decl==nullptr){
-                    cout <<"error\n";
-                }
-                nod->name=tokens[0].val; 
-                nod->type=tokens[0].type;
-                nod->nth=decl->nth;
-                arguments.push_back(std::move(nod));
+                //argument is a function call
+                if(tokens[1].type==Paren){
+                    unique_ptr<FuncCallNode> call=ParseFunctionCall(tokens);
+                    arguments.push_back(std::move(call));
+                    paramcounter++;
+                }else {
+                    unique_ptr<VarUseageNode> nod=make_unique<VarUseageNode>();
+                    VarDeclNode* decl= getVaridec(*current_fn_name+tokens[0].val);
+                    if (decl==nullptr){
+                        cout <<"error\n";
+                    }
+                    nod->name=tokens[0].val;
+                    nod->type=tokens[0].type;
+                    nod->nth=decl->nth;
+                    arguments.push_back(std::move(nod));
 
-                paramcounter++;//probnot needed
+                    paramcounter++;//probnot needed
+                }
             
             }
 
