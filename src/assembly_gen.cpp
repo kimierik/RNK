@@ -139,19 +139,24 @@ void generateOpp( AddOperand* opp){
 }
 
 
-void generateVarAssigment(VarAssigmentNode* node){
+void generateVarAssigment(VarAssigmentNode* node, int variableDeclCount){
     //we need to find variable what is the nth value of it
     //unless we save it to assigment node
     //then  something like : cout<<"\tmov "<<" value we want to put here ,"<<8*(n->nth+?)<<"(%rsp)"<<endl ;
     ILiterealNode* a= dynamic_cast<ILiterealNode*>(node->value.get());
     if(a){
         cout<<"\tmov $"<< a->value <<", " << 8*(node->variable->nth)  <<"(%rsp)" <<endl; //TODO remove the -1 from nth
-
     }
 
     if(dynamic_cast<AddOperand*>(node->value.get())){
         generateOpp(dynamic_cast<AddOperand*>(node->value.get()));
         cout<<"\tmov %rax"<<", " <<8*(node->variable->nth)  <<"(%rsp)"<<endl;
+    }
+
+    if(dynamic_cast<FuncCallNode*>(node->value.get())){
+        FuncCallNode* call =dynamic_cast<FuncCallNode*>(node->value.get());
+        generateFunctionCall(call, variableDeclCount);
+        cout<<"\tmov %rbx"<<", " <<8*(node->variable->nth)  <<"(%rsp)"<<endl;
     }
 
 
@@ -185,18 +190,28 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
             continue;
         }
         if(dynamic_cast<VarAssigmentNode*>(statement)){
-            generateVarAssigment(dynamic_cast<VarAssigmentNode*>(statement));
+            generateVarAssigment(dynamic_cast<VarAssigmentNode*>(statement), variableCount);
             continue;
         }
 
 
-        //TODO do proper returns
         //if this expression is a return
         RetNode* ret= dynamic_cast<RetNode*>(statement);
         if(ret){
+
+            //if we are returning int literal
             if (dynamic_cast<ILiterealNode*>(ret->value.get())){
                 cout << "\tmov $" << dynamic_cast<ILiterealNode*>(ret->value.get())->value<< ", %rbx" <<endl;
+                for (int i=0; i<variableCount; i++) {
+                    cout<<"\tpop %rax"<<endl;
+                }
+                cout <<"\tret"<<endl;
             }
+
+
+
+
+
         }//ret if end
     }
 

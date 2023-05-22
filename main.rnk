@@ -3,11 +3,15 @@ myfunciton(x:i):{
     log(x , 1) ;
 }
 
+retsthree():i {
+    return 3 ;
+}
+
 
 main():i{
     varname:i;
     vartwoname:i;
-    varname=3;
+    varname=retsthree();
     vartwoname=2+varname;
     log(8 , 1) ;
     log(varname,1);

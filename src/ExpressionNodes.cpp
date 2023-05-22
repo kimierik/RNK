@@ -35,7 +35,7 @@ class StatementNode{  // :  public ExprNode{
 
 
 //function. node probably return is here aswell
-class FuncCallNode : public StatementNode{
+class FuncCallNode : public StatementNode, public ExprNode{
     public:
     string name;
     vector<unique_ptr<ExprNode>> arguments;

@@ -255,7 +255,6 @@ class Parser{
         //0  1  2   3   4   5
         //expr can be literal or param or variable
 
-
         //first check if we are doing an opp
         //if not check if index 2 is a literal
         if (tokens[3].type==Operator){
@@ -266,8 +265,6 @@ class Parser{
             opp->left=std::move(left);
             opp->right=std::move(right);
             //assign left and right
-            //what is ind2 and 4 as expressions
-            //we probably can erase tokens in this fn
             Assign->value=std::move(opp);
         }else{
 
@@ -278,8 +275,20 @@ class Parser{
                 Assign->value=std::move(a);
                 //cout<<a.value;
             }
-
         }
+
+        //id =  id  (   p   )
+        //0  1  2   3   4   5
+        //function call
+        if(tokens[2].type==Identifier&& tokens[3].type==Paren){
+            tokens.erase(tokens.begin());
+            tokens.erase(tokens.begin());
+            unique_ptr<FuncCallNode> call = ParseFunctionCall(tokens);
+            Assign->value = std::move(call);
+        }
+
+
+
         return Assign;
 
     }
