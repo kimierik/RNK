@@ -135,26 +135,10 @@ void PrintILiteral(ILiterealNode* node){
     cout<<node->value<<endl;
 }
 
-//see what is the child of this node then print it aproprietly
-//or make function for each node seperately
-void PrintExprNode(ExprNode* node){
-    //iliteral and function declatarion
-    if (!node) {
-        cout<<"attempting to print null prt";
-    }
-    if(dynamic_cast<ILiterealNode*>(node)){
-        PrintILiteral(dynamic_cast<ILiterealNode*>(node));
-    }
-    if(dynamic_cast<AddOperand*>(node)){
-        PrintOps(dynamic_cast<AddOperand*>(node));
-    }
-}
-
-
 void PrintFuncCallNode(FuncCallNode*node){
     cout<<"calls function "<<node->name<<endl;
     cout<<"\twith "<< node->arguments.size() <<" arguments\n";
-    
+
     for ( int i=0; i<node->arguments.size();i++) {
         ExprNode* arg=node->arguments[i].get();
         if(dynamic_cast<ILiterealNode*>(arg)){
@@ -175,6 +159,26 @@ void PrintFuncCallNode(FuncCallNode*node){
         cout<<"NON SUPPORTED DATATYPE";
     }
 }
+//see what is the child of this node then print it aproprietly
+//or make function for each node seperately
+void PrintExprNode(ExprNode* node){
+    //iliteral and function declatarion
+    if (!node) {
+        cout<<"attempting to print null prt";
+    }
+    if(dynamic_cast<ILiterealNode*>(node)){
+        PrintILiteral(dynamic_cast<ILiterealNode*>(node));
+    }
+    if(dynamic_cast<AddOperand*>(node)){
+        PrintOps(dynamic_cast<AddOperand*>(node));
+    }
+
+    if(dynamic_cast<FuncCallNode*>(node)){
+        PrintFuncCallNode(dynamic_cast<FuncCallNode*>(node));
+    }
+}
+
+
 
 void PrintVarDeclNode(VarDeclNode* node){
     cout<<"Declares "<<node->nth <<"'th variable: "<<node->name<<endl;
@@ -212,6 +216,7 @@ void PrintStatementNode(StatementNode* node){
         PrintVarAssignNode(dynamic_cast<VarAssigmentNode*>(node));
     }
 
+
 }
 
 
@@ -233,6 +238,7 @@ void PrintEntireAST(ProgramNode* program){
     //TODO loop all function decleration nodes
     //
     for (int i =0; i< program->program.size(); i++) {
+        cout <<endl;
     
         cout<<":----Function----: "<<endl;
         cout<<program->program[i]->name<<endl;
