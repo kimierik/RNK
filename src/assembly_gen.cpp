@@ -171,8 +171,7 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
         StatementNode* statement =function->body[expressionIndex].get();
         //check what statement this is (+-*/= return, function call etc)
 
-        RetNode* ret= dynamic_cast<RetNode*>(statement);
-        
+
         //if a function call 
         if(dynamic_cast<FuncCallNode*>(statement)){
             generateFunctionCall(dynamic_cast<FuncCallNode*>(statement),variableCount);
@@ -193,19 +192,10 @@ void generateFunctionBody(unique_ptr<FuncDeclNode> function ){
 
         //TODO do proper returns
         //if this expression is a return
+        RetNode* ret= dynamic_cast<RetNode*>(statement);
         if(ret){
-            //if we are main function
-            //when we put this entire thing into a loop this needs to change aswell
-            if(function->name=="main"){
-                cout <<"\tmov $60 , %rax"<<endl;
-                if (dynamic_cast<ILiterealNode*>(ret->value.get())) {
-                    cout <<"\tmov $"<<dynamic_cast<ILiterealNode*>(ret->value.get())->value<< ", %rdi"<<endl;
-                    cout<<"\tsyscall"<<endl;
-                }else{
-                    cout <<"cannot support non iliteral return values from main"<<endl;
-                    exit(1);
-                }
-
+            if (dynamic_cast<ILiterealNode*>(ret->value.get())){
+                cout << "\tmov $" << dynamic_cast<ILiterealNode*>(ret->value.get())->value<< ", %rbx" <<endl;
             }
         }//ret if end
     }
@@ -234,16 +224,19 @@ void generate_assemply( unique_ptr<ProgramNode> program){
     //expressions of main function
     //
     //all my functions will have _ at the start for some reason now
-    
+
+    cout << "_start:"<<endl;
+    cout << "\tcall _main"<<endl;
+
+    cout <<"\tmov $60 , %rax"<<endl;
+    cout <<"\tmov "<<"%rbx"<< ", %rdi"<<endl;
+    cout <<"\tsyscall"<<endl;
+
 
     
     for (int i =0; i< program->program.size(); i++) {
 
         string fnName=program->program[i]->name;
-        if (program->program[i]->name=="main") {
-            //swap main to start. so we can have a _start in asm
-            fnName="start";
-        }
 
 
         //all functions have
