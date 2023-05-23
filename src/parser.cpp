@@ -19,10 +19,6 @@ class Parser{
 
     string* current_fn_name;
 
-    //we should do like a standard lib thing that auto defines certain functions
-    //like log
-    //so we can get used to calling actual functions in ass
-    //the fn should return a list of function definitions
 
 
     //parse expression
@@ -306,21 +302,38 @@ class Parser{
 
         //figures out parameters this function accepts
         vector<Token> params;
+
+        if (tokens[0].type!=Paren){
+            cout <<"syntax error unidentified character before function declaration parameters"<<endl;
+            cout <<tokens[0].val;
+            exit(1);
+        }
+
+        tokens.erase(tokens.begin());
+
+        // fn (name:i, nameb:i):{}
         while(tokens[0].val!=")"){
 
             if (tokens[0].type==i32){
                 params.push_back(Token(tokens[0].type,tokens[0].val));
             }
-            
+
             tokens.erase(tokens.begin());
         }
 
         
         mainfn->params= params;
-        tokens.erase(tokens.begin());
+        tokens.erase(tokens.begin()); //tokens[0] is ')'
 
-        //next token should be :
-        
+        //error if next token is not :
+        if (tokens[0].type!=Colon){
+            cout << "Syntax error in function decleration"<<endl;
+            cout << "functions should be declared"<<endl;
+            cout << "fnName():returnType{}"<<endl;
+            cout << " you are missing the ':' "<<endl;
+            exit(1);
+        }
+
         tokens.erase(tokens.begin());//remove
                                      
         //then \{ or literal value
@@ -397,6 +410,7 @@ class Parser{
                     arguments.push_back(std::move(call));
                     paramcounter++;
                 }else {
+
                     unique_ptr<VarUseageNode> nod=make_unique<VarUseageNode>();
                     VarDeclNode* decl= getVaridec(*current_fn_name+tokens[0].val);
                     if (decl==nullptr){
